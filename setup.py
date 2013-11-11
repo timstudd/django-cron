@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 from setuptools import setup, find_packages
-import django_cron
 
 def read_files(*filenames):
 	"""
