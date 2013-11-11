@@ -16,7 +16,7 @@ def read_files(*filenames):
 
 setup(
 	name='django-cron',
-	version=typesight.VERSION,
+	version='0.1',
 	url='https://github.com/timstudd/django-cron',
 	description='Threaded cron-like tasks for Django',
 	long_description=read_files('README.md'),
