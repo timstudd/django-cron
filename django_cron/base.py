@@ -23,7 +23,6 @@ THE SOFTWARE.
 import traceback, sys
 import cPickle
 from threading import Timer
-#from datetime import datetime
 
 from django.dispatch import dispatcher
 from django.conf import settings
@@ -32,10 +31,6 @@ from django.utils import timezone
 from signals import cron_done
 import models
 
-# how often to check if jobs are ready to be run (in seconds)
-# in reality if you have a multithreaded server, it may get checked
-# more often that this number suggests, so keep an eye on it...
-# default value: 300 seconds == 5 min
 polling_frequency = getattr(settings, "CRON_POLLING_FREQUENCY", 15)
 
 class Job(object):
@@ -53,6 +48,8 @@ class Job(object):
 		pass
 
 class CronScheduler(object):
+
+
 	def register(self, job_class, *args, **kwargs):
 		"""
 		Register the given Job with the scheduler class
@@ -72,30 +69,16 @@ class CronScheduler(object):
 		job.save()
 
 	def execute(self):
-		print("Running cron task every ", polling_frequency)
 		"""
 		Queue all Jobs for execution
 		"""
 		status, created = models.Cron.objects.get_or_create(pk=1)
 		
-		# This is important for 2 reasons:
-		#     1. It keeps us for running more than one instance of the
-		#        same job at a time
-		#     2. It reduces the number of polling threads because they
-		#        get killed off if they happen to check while another
-		#        one is already executing a job (only occurs with
-		#		 multi-threaded servers)
 		if status.executing:
-			Timer(polling_frequency, self.execute).start()
 			return
 
 		status.executing = True
-		try:
-			status.save()
-		except Exception as e:
-			print("Exception saving cron status:", e)
-			Timer(polling_frequency, self.execute).start()
-			return
+		status.save()
 
 		jobs = models.Job.objects.all()
 		for job in jobs:
@@ -121,10 +104,10 @@ class CronScheduler(object):
 		# Set up for this function to run again
 		Timer(polling_frequency, self.execute).start()
 
-	def abortExecution(self):
-		status, created = models.Cron.objects.get_or_create(pk=1)
-		if status.executing:
-			status.executing = False
-			status.save()
+def abortExecution(*args):
+	status, created = models.Cron.objects.get_or_create(pk=1)
+	if status.executing:
+		status.executing = False
+		status.save()
 
 cronScheduler = CronScheduler()
