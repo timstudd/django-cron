@@ -125,6 +125,6 @@ class CronScheduler(object):
 		status, created = models.Cron.objects.get_or_create(pk=1)
 		if status.executing:
 			status.executing = False
-			stats.save()
+			status.save()
 
 cronScheduler = CronScheduler()
