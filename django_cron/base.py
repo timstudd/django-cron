@@ -121,5 +121,10 @@ class CronScheduler(object):
 		# Set up for this function to run again
 		Timer(polling_frequency, self.execute).start()
 
+	def abortExecution(self):
+		status, created = models.Cron.objects.get_or_create(pk=1)
+		if status.executing:
+			status.executing = False
+			stats.save()
 
 cronScheduler = CronScheduler()
